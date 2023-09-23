@@ -18,6 +18,8 @@ import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import styles from './styles';
 import {GetWorldInfo, RestAction} from './actions';
 import {connect} from 'react-redux';
+import Modals from '../../helpers/modal';
+import {GENRIC_ERROR} from '../../helpers/constantText';
 
 const DataScreen = ({
   GetWorldInfo,
@@ -29,11 +31,11 @@ const DataScreen = ({
   RestAction,
 }) => {
   const [country, setCountry] = useState('');
-  console.log('askjhdjka', isSuccess);
-  console.log('askjhdjka', data);
+  const [modal, setModal] = useState(false);
+  const [errorMessage, setErrorMsg] = useState('');
   useEffect(() => {
     SendInformation();
-  }, [isSuccess]);
+  }, [isSuccess, errorMsg]);
 
   useEffect(() => {}, []);
 
@@ -42,9 +44,15 @@ const DataScreen = ({
       navigation.navigate('InfoScreen', {Info: data, SelectedName: country});
       await RestAction();
       setCountry('');
-    } else {
-      console.log('askjhdjka', isSuccess);
-      console.log('askjhdjka', data);
+    } else if (errorMsg) {
+      setModal(true);
+      if (errorMsg === GENRIC_ERROR) {
+        setErrorMsg(GENRIC_ERROR);
+      } else {
+        setErrorMsg(
+          'Oops! It looks like the country name you entered is incorrect. ',
+        );
+      }
     }
   };
 
@@ -56,7 +64,7 @@ const DataScreen = ({
     if (country) {
       await GetWorldInfo(details);
     } else {
-      Alert.alert('Please Fill countryNameBefore');
+      setModal(true);
     }
   };
 
@@ -79,6 +87,11 @@ const DataScreen = ({
         <Text style={styles.searchText}>Fly with us</Text>
         <Ionicons name="airplane" size={24} color={COLORS.primary} />
       </TouchableOpacity>
+      <Modals
+        isVisible={modal}
+        errorMsg={errorMessage}
+        modalButton={() => setModal(false)}
+      />
     </KeyboardAwareScrollView>
   );
 };
